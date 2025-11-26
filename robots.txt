@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://aaaaaaalvaro.github.io/StudioAGON.github.io/sitemap.xml

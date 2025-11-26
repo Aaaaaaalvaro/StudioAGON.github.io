@@ -1,0 +1,30 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VS Code / IDE
+.vscode/
+.history/
+
+# Logs / temp
+*.log
+*.tmp
+*.temp
+*.bak
+~$*
+
+# Node / build
+node_modules/
+dist/
+build/
+.cache/
+
+# Env / creds
+.env
+.env.*
+
+# Proyecto
+assets/images/originals/
+temp_*.txt
+*.orig
