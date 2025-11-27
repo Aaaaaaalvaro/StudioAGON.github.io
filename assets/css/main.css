@@ -429,10 +429,21 @@ html.menu-open .menu-toggle .bar:nth-child(3){ transform:translateY(-8px) rotate
   width:100%;
   aspect-ratio:1/1;
   object-fit:cover;
+  object-position:50% 50%;
   border-radius:6px;
   display:block;
   background:#111;
 }
+
+/* Foco de atención: utilidades de alineación */
+.project-image.focus-top img, img.focus-top { object-position:50% 0%; }
+.project-image.focus-bottom img, img.focus-bottom { object-position:50% 100%; }
+.project-image.focus-left img, img.focus-left { object-position:0% 50%; }
+.project-image.focus-right img, img.focus-right { object-position:100% 50%; }
+.project-image.focus-tl img, img.focus-tl { object-position:0% 0%; }
+.project-image.focus-tr img, img.focus-tr { object-position:100% 0%; }
+.project-image.focus-bl img, img.focus-bl { object-position:0% 100%; }
+.project-image.focus-br img, img.focus-br { object-position:100% 100%; }
 
 .projects-list .project:not(:last-child)::after {
   content:"";
@@ -547,8 +558,7 @@ html.menu-open .menu-toggle .bar:nth-child(3){ transform:translateY(-8px) rotate
    Proyecto Detalle
 ----------------------------------------------------------- */
 .project-detail {
-  grid-column:2 / span 2;
-  max-width:70ch;
+  grid-column:1 / -1;
   line-height:1.5;
 }
 
@@ -576,6 +586,7 @@ html.menu-open .menu-toggle .bar:nth-child(3){ transform:translateY(-8px) rotate
   width:100%;
   border-radius:8px;
   object-fit:cover;
+  object-position:50% 50%;
   display:block;
 }
 
