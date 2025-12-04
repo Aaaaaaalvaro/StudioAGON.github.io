@@ -6,7 +6,7 @@
   --header-height:64px;
   --content-max-width:1400px;
   --content-width:clamp(520px, 50vw, var(--content-max-width));
-  --side-width:200px;
+  --side-width:240px;
   --side-gutter:48px;
   
   /* Espaciado */
@@ -738,7 +738,13 @@ html.menu-open .menu-toggle .bar:nth-child(3){ transform:translateY(-8px) rotate
   align-items:start;
 }
 
-.footer-col-copy { grid-column:1; }
+.footer-col-copy { 
+  grid-column:1; 
+  text-align:right;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+}
 .footer-col-note { grid-column:2; }
 .footer-col-links { grid-column:3; }
 
@@ -747,7 +753,6 @@ html.menu-open .menu-toggle .bar:nth-child(3){ transform:translateY(-8px) rotate
   color:var(--color-text-secondary);
   font-size:var(--type-body-size);
   margin:0;
-  align-items:right;
 }
 
 .footer-links {
