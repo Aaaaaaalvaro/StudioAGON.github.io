@@ -1,161 +1,155 @@
 console.log('cursor.js: cargado'); // línea de comprobación
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('DOMContentLoaded disparado');
     (function () {
-        const cursor = document.querySelector('.cursor');
-        if (!cursor) return;
+        // Crear SVG del cursor con 3 círculos RGB puros y blend mode correcto
+        const cursorHTML = `
+            <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="overflow: visible;">
+                <circle class="cursor-red" cx="32" cy="27" r="13" fill="#ff0000" style="mix-blend-mode: screen;" />
+                <circle class="cursor-green" cx="38" cy="36" r="13" fill="#00ff00" style="mix-blend-mode: screen;" />
+                <circle class="cursor-blue" cx="26" cy="36" r="13" fill="#0000ff" style="mix-blend-mode: screen;" />
+            </svg>
+        `;
 
-        // No activar en dispositivos táctiles
-        if (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches) {
-            cursor.style.display = 'none';
+        const cursorEl = document.querySelector('.cursor');
+        console.log('Cursor element:', cursorEl);
+        if (!cursorEl) {
+            console.error('No se encontró el elemento .cursor');
             return;
         }
 
-        // Oculta cursor nativo vía JS (complementario a CSS)
+        // Insertar SVG en el cursor
+        cursorEl.innerHTML = cursorHTML;
+        cursorEl.style.width = '64px';
+        cursorEl.style.height = '64px';
+        cursorEl.style.pointerEvents = 'none';
+
+        // No activar en dispositivos táctiles
+        if (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches) {
+            cursorEl.style.display = 'none';
+            return;
+        }
+
+        // Oculta cursor nativo
         document.documentElement.classList.add('custom-cursor-active');
         document.documentElement.style.cursor = 'none';
 
-        // Lerp suave
+        // Posición del cursor
         let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
         let cursorX = mouseX, cursorY = mouseY;
         const speed = 0.18;
 
+        // Elementos SVG circle para animar
+        const circles = cursorEl.querySelectorAll('circle');
+        console.log('Círculos encontrados:', circles.length);
+        const states = ['idle', 'focus', 'hover', 'defocus', 'active', 'disabled'];
+        const clickableSelector = 'a, button, input, textarea, select, label, .button, .clickable, [role="button"], [role="link"], .menu-toggle, [tabindex]';
+        const imageSelector = '.project-gallery img, .project-image img, .featured-image-large img';
+
+        let transitionTimer = null;
+        let currentState = 'idle';
+        let currentInteractiveEl = null;
+
         window.addEventListener('mousemove', e => {
             mouseX = e.clientX;
             mouseY = e.clientY;
-            cursor.style.display = 'block';
+            cursorEl.style.display = 'block';
         });
 
         function animate() {
             cursorX += (mouseX - cursorX) * speed;
             cursorY += (mouseY - cursorY) * speed;
-            cursor.style.left = cursorX + 'px';
-            cursor.style.top = cursorY + 'px';
+            cursorEl.style.left = (cursorX - 32) + 'px';
+            cursorEl.style.top = (cursorY - 32) + 'px';
             requestAnimationFrame(animate);
         }
         animate();
 
-        const clickableSelector = 'a, button, input, textarea, select, label, .button, .clickable, [role="button"]';
-
-        // Estados y temporizador para Focus / Defocus
-        const states = ['idle', 'focus', 'hover', 'defocus', 'active', 'disabled'];
-        const transitionDurationMs = 88; // 0.088s para coincidir con la duración de los GIFs Focus/Defocus
-        let transitionTimer = null;
-        let currentState = 'idle';
-        let currentInteractiveEl = null;
-
-        // Asegura clase inicial si no existe
-        if (![...cursor.classList].some(c => states.includes(c))) cursor.classList.add('idle');
-
+        // New simplified state manager relying on CSS transitions
         function applyState(s) {
-            // limpiar temporizador si se cambia a un estado que no sea la transición en curso
-            if (transitionTimer && s !== 'focus' && s !== 'defocus') {
-                clearTimeout(transitionTimer);
-                transitionTimer = null;
-            }
-            cursor.classList.remove(...states.filter(st => st !== s));
-            cursor.classList.add(s);
+            // Remove all possible state classes first (except 'cursor')
+            cursorEl.classList.remove('idle', 'focus', 'hover', 'active', 'disabled', 'image-hover');
+
+            // Add the new state
+            cursorEl.classList.add(s);
             currentState = s;
         }
 
-        // Gestión robusta con Pointer Events y seguimiento del elemento interactivo actual
         function handleEnter(el) {
             currentInteractiveEl = el;
             if (el.disabled || el.getAttribute('aria-disabled') === 'true') {
                 applyState('disabled');
                 return;
             }
-
-            if (currentState === 'idle') {
-                applyState('focus');
-                transitionTimer = setTimeout(() => {
-                    transitionTimer = null;
-                    const under = document.elementFromPoint(mouseX, mouseY);
-                    if (under && under.closest(clickableSelector)) applyState('hover');
-                    else applyState('idle');
-                }, transitionDurationMs);
-                return;
-            }
-
-            if (currentState === 'defocus' && transitionTimer) {
-                clearTimeout(transitionTimer);
-                transitionTimer = null;
-                applyState('hover');
-                return;
-            }
-
-            if (currentState !== 'hover' && currentState !== 'active') applyState('hover');
+            // Instant hover state
+            applyState('hover');
         }
 
-        function handleLeave(e) {
-            const leavingEl = currentInteractiveEl;
-            const rel = e.relatedTarget;
-            const relInteractive = rel && rel.nodeType === 1 ? rel.closest(clickableSelector) : null;
-
-            // Si vamos a otro interactivo, mantener hover y no lanzar defocus
-            if (relInteractive && relInteractive !== leavingEl) {
-                currentInteractiveEl = relInteractive;
-                if (currentState !== 'active') applyState('hover');
-                return;
-            }
-
+        function handleLeave() {
             currentInteractiveEl = null;
-
-            if (currentState === 'hover') {
-                applyState('defocus');
-                transitionTimer = setTimeout(() => {
-                    transitionTimer = null;
-                    const under = document.elementFromPoint(mouseX, mouseY);
-                    if (!(under && under.closest(clickableSelector))) applyState('idle');
-                    else applyState('hover');
-                }, transitionDurationMs);
-                return;
-            }
-
+            // Instant return to idle
             applyState('idle');
         }
 
+        // Initial state
+        applyState('idle');
+
         document.addEventListener('pointerover', (e) => {
+            const img = e.target.closest(imageSelector);
+            if (img) {
+                applyState('image-hover');
+                return;
+            }
+
             const el = e.target.closest(clickableSelector);
             if (!el) return;
 
-            // Si ya estamos sobre el mismo interactivo, no repitas
             if (currentInteractiveEl === el) return;
-
-            // Si había un defocus en curso, cancelarlo al entrar
-            if (currentState === 'defocus' && transitionTimer) {
-                clearTimeout(transitionTimer);
-                transitionTimer = null;
-            }
             handleEnter(el);
         });
 
         document.addEventListener('pointerout', (e) => {
+            const img = e.target.closest(imageSelector);
+            if (img) {
+                const relImg = e.relatedTarget && e.relatedTarget.closest(imageSelector);
+                if (relImg) return;
+
+                if (!currentInteractiveEl) applyState('idle');
+                return;
+            }
+
             const el = e.target.closest(clickableSelector);
             if (!el) return;
 
-            // Si seguimos dentro del mismo interactivo (salida de hijo a padre), ignorar
+            // If moving to another interactive element inside this one or related, ignore
             if (currentInteractiveEl && currentInteractiveEl.contains(e.relatedTarget)) return;
 
-            // Solo procesar si salimos del interactivo actual
-            if (currentInteractiveEl === el) handleLeave(e);
+            if (currentInteractiveEl === el) handleLeave();
         });
 
         document.addEventListener('pointerdown', (e) => {
-            if (e.button !== 0) return;
-            applyState('active');
+            if (e.button !== 0) return; // Only left click
+            cursorEl.classList.add('active'); // Add active on top of current state
         });
 
         document.addEventListener('pointerup', () => {
+            cursorEl.classList.remove('active');
+            // Re-verify state under cursor in case we dragged out
             const under = document.elementFromPoint(mouseX, mouseY);
-            if (under && under.closest(clickableSelector)) applyState('hover');
-            else applyState('idle');
+            if (under) {
+                if (under.closest(imageSelector)) {
+                    applyState('image-hover');
+                } else if (under.closest(clickableSelector)) {
+                    applyState('hover');
+                } else {
+                    applyState('idle');
+                }
+            }
         });
 
         window.addEventListener('blur', () => {
-            if (transitionTimer) { clearTimeout(transitionTimer); transitionTimer = null; }
-            cursor.style.display = 'none';
+            cursorEl.style.display = 'none';
         });
-        window.addEventListener('focus', () => { /* se mostrará al mover el ratón */ });
 
         const observer = new MutationObserver(() => {
             const under = document.elementFromPoint(mouseX, mouseY);
