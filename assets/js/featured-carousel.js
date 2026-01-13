@@ -7,6 +7,9 @@
   const indicators = carousel.querySelectorAll('.indicator');
   let currentIndex = 0;
   let autoplayInterval;
+  let isPlaying = true;
+  let lastSlideTime = Date.now();
+  const slideDuration = 5000; // 5 segundos
 
   function showSlide(index) {
     // Remover active de todos
@@ -17,6 +20,7 @@
     slides[index].classList.add('active');
     indicators[index].classList.add('active');
     currentIndex = index;
+    lastSlideTime = Date.now(); // Reiniciar el temporizador cuando se cambia de slide
   }
 
   function nextSlide() {
@@ -24,8 +28,19 @@
     showSlide(next);
   }
 
+  function checkAutoplay() {
+    if (!isPlaying) return;
+    
+    const timeSinceLastSlide = Date.now() - lastSlideTime;
+    if (timeSinceLastSlide >= slideDuration) {
+      nextSlide();
+    }
+  }
+
   function startAutoplay() {
-    autoplayInterval = setInterval(nextSlide, 5000); // Cambiar cada 5 segundos
+    if (!isPlaying) return;
+    // Usar requestAnimationFrame para verificar continuamente
+    autoplayInterval = setInterval(checkAutoplay, 100);
   }
 
   function stopAutoplay() {
@@ -41,9 +56,18 @@
     });
   });
 
-  // Pausar autoplay al hacer hover
-  carousel.addEventListener('mouseenter', stopAutoplay);
-  carousel.addEventListener('mouseleave', startAutoplay);
+  // Pausar autoplay completamente al hacer hover
+  carousel.addEventListener('mouseenter', () => {
+    isPlaying = false;
+    stopAutoplay();
+  });
+
+  // Reanudar autoplay cuando se va el mouse
+  carousel.addEventListener('mouseleave', () => {
+    isPlaying = true;
+    lastSlideTime = Date.now(); // Reiniciar contador cuando se reanuda
+    startAutoplay();
+  });
 
   // Iniciar autoplay
   startAutoplay();

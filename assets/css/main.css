@@ -204,21 +204,14 @@ main {
 
 /* Navegación */
 .site-header nav {
-  /* Remove absolute centering for desktop to avoid overlap.
-     We use flex order/flow now. Or absolute only if ample space.
-     Let's try absolute center but with logic to hide if conflict? 
-     No, let's make it static and use margin auto if we want it centered?
-     Actually, if we want it strictly centered relative to SCREEN, we need absolute.
-     If we want it Safe, we use flex. 
-     Let's use Absolute for Desktop (as per design) but ensure breakpoint 1100px handles the clash.
-  */
+  /* Desktop: center navigation absolutely */
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   display: flex;
-  gap: 3vw;
-  /* Responsive gap */
+  align-items: center;
+  gap: 2rem;
 }
 
 .nav-socials {
@@ -347,6 +340,13 @@ html.menu-open .menu-toggle .bar:nth-child(3) {
   text-decoration: none;
   font-size: .95rem;
   white-space: nowrap;
+  transition: color 0.3s ease;
+  position: relative;
+}
+
+.site-header nav a:hover,
+.site-header nav a[aria-current="page"] {
+  color: var(--color-accent);
 }
 
 
@@ -792,7 +792,11 @@ img.focus-br {
   object-fit: contain;
   object-position: 50% 50%;
   display: block;
-  cursor: none;
+  cursor: none !important;
+}
+
+.project-gallery img:hover {
+  cursor: none !important;
 }
 
 .project-gallery figcaption {
@@ -1064,12 +1068,14 @@ img.focus-br {
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.8rem;
   line-height: 1;
   transition: background .15s ease, transform .15s ease;
 }
@@ -1081,6 +1087,49 @@ img.focus-br {
 
 .lightbox-close:active {
   transform: scale(0.97);
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.lightbox-prev,
+.lightbox-next {
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: background .15s ease, transform .15s ease;
+  pointer-events: auto;
+}
+
+.lightbox-prev:hover,
+.lightbox-next:hover {
+  background: rgba(0, 0, 0, 0.75);
+  transform: scale(1.08);
+}
+
+.lightbox-prev:active,
+.lightbox-next:active {
+  transform: scale(0.95);
 }
 
 body.lightbox-open {
@@ -1095,6 +1144,16 @@ body.lightbox-open {
   .lightbox-close {
     top: -2.2rem;
     right: 0;
+    width: 36px;
+    height: 36px;
+    font-size: 1.5rem;
+  }
+
+  .lightbox-prev,
+  .lightbox-next {
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
   }
 }
 
